@@ -160,6 +160,7 @@ async def archive_account(bot: Bot, account: dict, resuming: bool = False):
             entries, channel_name = await downloader.fetch_profile_entries(account["url"])
             await db.update_display_name(account["id"], channel_name)
             account = await db.get_account_by_id(account["id"]) or account
+            label = _account_label(account)  # update with real channel name
         except Exception as exc:
             logger.error("fetch_profile_entries failed for %s: %s", label, exc)
             await send_text(bot, chat_id, f"❌ Error al obtener videos de {label}:\n{exc}")
