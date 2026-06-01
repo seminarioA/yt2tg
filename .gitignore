@@ -1,0 +1,7 @@
+.env
+data/temp/
+data/metadata/
+data/comments/
+__pycache__/
+*.pyc
+.DS_Store
