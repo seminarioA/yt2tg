@@ -7,7 +7,8 @@ on:
     branches: [main, master]
 
 jobs:
-  test:
+  unit:
+    name: Unit tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -17,5 +18,27 @@ jobs:
           cache: pip
       - name: Install dependencies
         run: pip install -r requirements.txt pytest pytest-asyncio
-      - name: Run tests
-        run: pytest --tb=short -v
+      - name: Run unit tests
+        run: pytest --tb=short -v --ignore=tests/test_integration.py
+
+  integration:
+    name: Integration tests (YouTube)
+    runs-on: ubuntu-latest
+    # Only runs if the YT_COOKIES secret exists
+    if: ${{ vars.RUN_INTEGRATION == 'true' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies
+        run: pip install -r requirements.txt pytest pytest-asyncio
+      - name: Write cookies file
+        run: echo "${{ secrets.YT_COOKIES }}" | base64 -d > /tmp/yt_cookies.txt
+      - name: Run integration tests
+        env:
+          INTEGRATION_TESTS: "1"
+          COOKIES_FILE: /tmp/yt_cookies.txt
+          DATA_DIR: /tmp/yt2tg_ci
+        run: pytest tests/test_integration.py --tb=short -v
